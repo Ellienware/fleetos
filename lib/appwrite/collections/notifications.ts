@@ -183,3 +183,32 @@ export async function updateNotification(
     }
   ) as unknown as Notification;
 }
+
+export async function getNotificationsByTenant(
+  tenantId: string,
+  page = 1,
+  limit = 25
+) {
+  const { databases } = createAdminClient();
+
+  const offset = (page - 1) * limit;
+
+  const response = await databases.listDocuments(
+    databaseId,
+    COLLECTIONS.NOTIFICATIONS,
+    [
+      Query.equal('tenantId', tenantId),
+      Query.orderDesc('createdAt'),
+      Query.limit(limit),
+      Query.offset(offset),
+    ]
+  );
+
+  return {
+    documents: response.documents as unknown as Notification[],
+    total: response.total,
+    page,
+    limit,
+    hasMore: offset + response.documents.length < response.total,
+  };
+}
