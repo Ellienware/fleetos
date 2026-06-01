@@ -176,11 +176,11 @@ export function RegisterForm() {
 
         <SectionLabel>Admin account</SectionLabel>
 
-        <FormField label="Your full name">
+        <FormField label="full name">
           <TextInput
             id="name"
             name="name"
-            placeholder="John Doe"
+            placeholder=""
             autoComplete="name"
             disabled={isLoading}
           />
