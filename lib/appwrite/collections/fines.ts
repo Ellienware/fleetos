@@ -35,6 +35,16 @@ export async function createFine(
   ) as unknown as Fine;
 }
 
+export async function deleteFine(fineId: string): Promise<void> {
+  const { databases } = createAdminClient();
+
+  await databases.deleteDocument(
+    databaseId,
+    COLLECTIONS.FINES,
+    fineId
+  );
+}
+
 export async function getFineById(fineId: string): Promise<Fine | null> {
   const { databases } = createAdminClient();
   

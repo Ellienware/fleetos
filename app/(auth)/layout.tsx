@@ -18,7 +18,7 @@ export default function AuthLayout({
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Bus className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold text-foreground">TaxiSaaS</span>
+          <span className="text-xl font-bold text-foreground">FleetOS</span>
         </Link>
         {children}
       </div>

@@ -74,6 +74,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.15.9",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.19.17",

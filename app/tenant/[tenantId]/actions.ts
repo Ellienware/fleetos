@@ -31,7 +31,8 @@ import {
   getFinesByTenant, 
   getFinesByOwner, 
   markFinePaid, 
-  waiveFine 
+  waiveFine, 
+  deleteFine
 } from '@/lib/appwrite/collections/fines';
 import { 
   createPayment, 
@@ -988,7 +989,27 @@ export async function getRankRoutesAction(tenantId: string, rankId: string) {
   }
 }
 
+export async function deleteFineAction(
+  tenantId: string,
+  fineId: string
+) {
+  await validateTenantAccess(tenantId);
 
+  try {
+    await deleteFine(fineId);
+
+    revalidatePath(`/tenant/${tenantId}/fines`, 'page');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to delete fine:', error);
+
+    return {
+      success: false,
+      error: 'Failed to delete fine',
+    };
+  }
+}
 export async function updateRankAction(
   tenantId: string,
   rankId: string,
