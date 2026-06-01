@@ -8,7 +8,7 @@ import { StatsCards } from '@/components/admin/stats-cards';
 import { getAllTenants, getTenantStats } from '@/lib/appwrite/collections/tenants';
 import { createAdminClient, Query } from '@/lib/appwrite/server';
 import { APPWRITE_CONFIG, COLLECTIONS } from '@/lib/appwrite/config';
-
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Admin Dashboard',
 };

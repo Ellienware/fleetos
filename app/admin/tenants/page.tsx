@@ -23,7 +23,7 @@ import {
 import { getAllTenants } from '@/lib/appwrite/collections/tenants';
 import { createAdminClient, Query } from '@/lib/appwrite/server';
 import { APPWRITE_CONFIG, COLLECTIONS } from '@/lib/appwrite/config';
-
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Associations',
 };
