@@ -93,36 +93,76 @@ async function validateTenantAccess(tenantId: string) {
 // ==================== OWNER ACTIONS ====================
 
 
+
+/**
+ * Helper: Format phone to E.164 or return undefined (Appwrite wants undefined, not null)
+ */
+function formatPhoneNumber(phone: string | undefined | null): string | undefined {
+  if (!phone || phone.trim() === '') return undefined;
+  
+  const raw = phone.trim();
+  // Remove all non‑digit except leading '+'
+  const cleaned = raw.replace(/[^\d+]/g, '');
+  let withPlus = cleaned;
+  if (!cleaned.startsWith('+')) {
+    withPlus = `+${cleaned}`;
+  }
+  const digitsOnly = withPlus.slice(1).replace(/\D/g, '');
+  if (digitsOnly.length === 0 || digitsOnly.length > 15) {
+    return undefined; // invalid → treat as missing
+  }
+  return `+${digitsOnly}`;
+}
+
 export async function createOwnerAction(tenantId: string, data: OwnerFormData) {
   const session = await validateTenantAccess(tenantId);
+  if (!session) {
+    return { success: false, error: 'Unauthorized access' };
+  }
   
   try {
-    // Create Appwrite user for the owner
+    // 1. Format phone to E.164 (or undefined if invalid/missing)
+    const formattedPhone = formatPhoneNumber(data.phone);
+    if (data.phone && data.phone.trim() !== '' && !formattedPhone) {
+      return { 
+        success: false, 
+        error: 'Invalid phone number. Must start with "+" and have 1–15 digits (e.g., +27721234567).' 
+      };
+    }
+    
+    // 2. Create Appwrite user (undefined is allowed, null is not)
     const { users } = createAdminClient();
     const tempPassword = Math.random().toString(36).slice(-12);
     const newUser = await users.create(
       ID.unique(),
       data.email,
-      data.phone,
+      formattedPhone,        // ✅ undefined (not null) when no phone
       tempPassword,
       `${data.firstName} ${data.lastName}`
     );
     
-    // Create owner document linked to the new user
+    // 3. Create owner document
+    //    If your CreateOwnerData requires a string, we can pass an empty string or modify the type.
+    //    Here we assume the type can accept `string | undefined` – if not, adjust accordingly.
     const owner = await createOwner(tenantId, {
       ...data,
       userId: newUser.$id,
+      profileId: newUser.$id,
       membershipStatus: 'pending',
+      phone: formattedPhone ?? '',   // fallback to empty string if undefined
     });
     
     revalidatePath(`/tenant/${tenantId}/owners`, 'page');
-    return { success: true, data: owner };
-  } catch (error) {
+    return { success: true, data: toPlainObject(owner) };
+    
+  } catch (error: any) {
     console.error('Failed to create owner:', error);
-    return { success: false, error: 'Failed to create owner' };
+    if (error?.code === 400 && error?.type === 'general_argument_invalid' && error?.response?.includes('phone')) {
+      return { success: false, error: 'Invalid phone number format. Use international format starting with + (e.g., +27721234567).' };
+    }
+    return { success: false, error: error?.message || 'Failed to create owner' };
   }
 }
-
 
 
 // Then inside getOwnersAction:
